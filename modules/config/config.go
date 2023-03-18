@@ -9,15 +9,11 @@ import (
 )
 
 var Config = struct {
-	APPName string `default:"SForum API" env:"APPName"`
-
-	DB struct {
-		Name     string
-		User     string `default:"root" env:"DBUser"`
-		Password string `required:"true" env:"DBPassword"`
-		Port     uint   `default:"3306" env:"DBPort"`
-	}
-	APPPort uint `default:"3000" env:"APPPort"`
+	APPName    string `default:"SForum File" env:"APPName"`
+	Port       uint   `default:"3000" env:"Port"`
+	Url        string `required:"true" env:"Url"`
+	Token      string `required:"true" env:"Token"`
+	UploadPath string `required:"true" env:"UploadPath"`
 }{}
 
 func Get(basePath string) {
@@ -48,10 +44,11 @@ func Get(basePath string) {
 // GetDefault 获取默认配置
 func GetDefault() []byte {
 	config := Config
-	config.DB.Name = "database name"
-	config.DB.Port = 3306
-	config.DB.User = "root"
-	config.DB.Password = "password"
+	config.APPName = "SForum File"
+	config.Port = 3000
+	config.Url = "http://localhost:3000/uploads"
+	config.Token = helpers.RandString(32)
+	config.UploadPath = "./uploads"
 	out, err := yaml.Marshal(&config)
 	if err != nil {
 		return nil

@@ -2,10 +2,12 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/zhuchunshu/sf-file/modules/config"
+	"github.com/zhuchunshu/sf-file/modules/controllers"
+	"github.com/zhuchunshu/sf-file/modules/middleware"
+	"github.com/zhuchunshu/sf-file/router"
 	"os"
 	"reflect"
 	"strings"
@@ -16,12 +18,6 @@ var BasePath string
 type Router struct {
 	app         *fiber.App
 	controllers []interface{}
-}
-
-func NewRouter(app *fiber.App) *Router {
-	return &Router{
-		app: app,
-	}
 }
 
 func (r *Router) RegisterController(controller interface{}) {
@@ -62,33 +58,36 @@ func init() {
 
 func main() {
 	app := fiber.New(fiber.Config{
-		ServerHeader: "SForum File Server",
+		ServerHeader: config.Config.APPName,
 		AppName:      "SForum File v1.0.0",
 		// 优化json
 		JSONEncoder: json.Marshal,
 		JSONDecoder: json.Unmarshal,
 		// 错误处理
 		ErrorHandler: func(ctx *fiber.Ctx, err error) error {
-			// Status code defaults to 500
-			code := fiber.StatusInternalServerError
 			// Retrieve the custom status code if it's a *fiber.Error
-			var e *fiber.Error
-			if errors.As(err, &e) {
-				code = e.Code
-			}
-			// Send custom error page
-			err = ctx.Status(code).SendFile(fmt.Sprintf("./%d.html", code))
 			if err != nil {
 				// In case the SendFile fails
-				return ctx.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+				return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"code":  fiber.StatusInternalServerError,
+					"error": true,
+					"msg":   err.Error(),
+				})
 			}
 			// Return from handler
 			return nil
 		},
 	})
+	// home
+	app.All("/", controllers.Index)
+
+	// 初始化中间件
+	middleware.Init(app)
+	// 初始化路由
+	router.InitRouter(app)
 
 	// 监听端口
-	err := app.Listen(":3000")
+	err := app.Listen(":" + fmt.Sprint(config.Config.Port))
 	if err != nil {
 		return
 	}
