@@ -4,12 +4,21 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"github.com/zhuchunshu/sf-file/modules/config"
+	"os"
 	"time"
 )
 
 func UploadFile(c *fiber.Ctx) error {
-	// 从表单中获取文件
+	// 上传文件
 	file, err := c.FormFile("file")
+	if err != nil {
+		return c.JSON(fiber.Map{
+			"code":  400,
+			"error": true,
+			"msg":   "上传失败",
+		})
+	}
+
 	if err != nil {
 		return err
 	}
@@ -33,6 +42,14 @@ func UploadFile(c *fiber.Ctx) error {
 
 	// 完整路径
 	path := fmt.Sprintf("%s/%s", uploadPath, filePath)
+
+	// 目录路径
+	dirPath := fmt.Sprintf("%s/%s", uploadPath, folderName)
+
+	// 创建上传文件夹
+	if err := os.MkdirAll(dirPath, os.ModePerm); err != nil {
+		return err
+	}
 
 	// 将文件保存到服务器上的 "uploads" 文件夹中
 	if err := c.SaveFile(file, path); err != nil {

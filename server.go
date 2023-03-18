@@ -78,9 +78,10 @@ func main() {
 			return nil
 		},
 	})
+	// static
+	app.Static("/uploads", config.Config.UploadPath)
 	// home
-	app.All("/", controllers.Index)
-
+	app.Get("/", controllers.Index)
 	// 初始化中间件
 	middleware.Init(app)
 	// 初始化路由
