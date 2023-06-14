@@ -3,7 +3,7 @@ module github.com/zhuchunshu/sf-file
 go 1.19
 
 require (
-	github.com/gofiber/fiber/v2 v2.42.0
+	github.com/gofiber/fiber/v2 v2.43.0
 	github.com/jinzhu/configor v1.2.1
 	gopkg.in/yaml.v3 v3.0.1
 )
